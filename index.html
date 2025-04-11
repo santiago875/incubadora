@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control LED ESP32 (JSON)</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f0f0;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        
+        #btn-on {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        #btn-off {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Control LED ESP32 (JSON)</h1>
+    <button id="btn-on">ENCENDER LED</button>
+    <button id="btn-off">APAGAR LED</button>
+    <div id="status">Desconectado del broker</div>
+
+    <script>
+        // Configuración MQTT (usa tus credenciales)
+        const brokerUrl = "wss://incubadora875.cloud.shiftr.io";
+        const options = {
+            username: "incubadora875",
+            password: "OfA8xnGV03MOPyCc",
+            clientId: "E80B65F4CEEC20"
+        };
+        const topic = "incubadora875/E80B65F4CEEC20/command"; // Ajusta al tópico que usa tu ESP32
+
+        // Conexión al broker
+        const client = mqtt.connect(brokerUrl, options);
+
+        // Elementos HTML
+        const btnOn = document.getElementById("btn-on");
+        const btnOff = document.getElementById("btn-off");
+        const statusDiv = document.getElementById("status");
+
+        // Manejar conexión
+        client.on("connect", () => {
+            statusDiv.textContent = "Conectado al broker!";
+            statusDiv.style.color = "green";
+            btnOn.disabled = false;
+            btnOff.disabled = false;
+        });
+
+        // Manejar errores
+        client.on("error", (error) => {
+            statusDiv.textContent = "Error: " + error.message;
+            statusDiv.style.color = "red";
+        });
+
+        // Botones
+        btnOn.addEventListener("click", () => {
+            const message = JSON.stringify({
+                output: "RELAY1",
+                value: true
+            });
+            client.publish(topic, message);
+            statusDiv.textContent = "Encendiendo LED (JSON enviado)";
+        });
+
+        btnOff.addEventListener("click", () => {
+            const message = JSON.stringify({
+                output: "RELAY1",
+                value: false
+            });
+            client.publish(topic, message);
+            statusDiv.textContent = "Apagando LED (JSON enviado)";
+        });
+
+        // Inicializar botones como desactivados hasta conectar
+        btnOn.disabled = true;
+        btnOff.disabled = true;
+    </script>
+</body>
+
+</html>
